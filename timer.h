@@ -2,21 +2,21 @@
 
 class Timer {
 public:
-    Timer(long _duration) {
-        startTimeMs = millis();
+    Timer(unsigned long _startTimeMs, long _duration) {
+        startTimeMs = _startTimeMs;
         duration = _duration;
         isTimeOver = false;
     }
 
-    long getDelta() {
-        return millis() - startTimeMs;
+    long getDelta(unsigned long currentTime) {
+        return currentTime - startTimeMs;
     }
 
-    bool isOver() {
+    bool isOver(unsigned long currentTime) {
         if (isTimeOver)
             return true;
 
-        long delta = getDelta();
+        long delta = getDelta(currentTime);
         isTimeOver = delta > duration;
         return isTimeOver;
     }

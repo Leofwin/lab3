@@ -1,6 +1,7 @@
 #include "diode.h"
 #include "sensor.h"
 #include "game.h"
+#include "printer.h"
 
 #define R_OUT_FIRST 7
 #define G_OUT_FIRST 8
@@ -17,8 +18,13 @@
 const int sensorPinFirst = A0;
 const int sensorPinSecond = A1;
 const int sensorPinThird = A2;
-Game* game;
 
+const int dinPin = 26;
+const int clkPin = 22;
+const int csPin = 24;
+const int displayCount = 1;
+ScorePrinter* scorePrinter;
+Game* game;
 bool isPrintScores = false;
 
 void setup() {
@@ -28,6 +34,7 @@ void setup() {
         new Item(new Diode(R_OUT_THIRD, G_OUT_THIRD, B_OUT_THIRD), new DistanceSensor(sensorPinThird))
     };
     game = new Game(items, 3);
+    scorePrinter = new ScorePrinter(dinPin, clkPin, csPin, displayCount);
 }
 
 void loop() {
@@ -38,10 +45,6 @@ void loop() {
         game->tick();
     }
 
-    printScores(game->getTotalScores());
+    scorePrinter->printScores(game->getScores(), game->getMaxScores());
     isPrintScores = true;
-}
-
-void printScores(int scores) {
-
 }

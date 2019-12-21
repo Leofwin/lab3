@@ -14,6 +14,7 @@
 #define DIODE_COLOR_BLUE 0
 
 const float maxDistance = 20.0;
+const int maxScoresPerRound = 5;
 const long timeToHoldMs = 1000 * 5;
 const long gameTimeMs = 1000 * 40;
 
@@ -47,16 +48,17 @@ private:
 class Game {
 public:
     Game(Item** _items, int _itemsCount) {
-        itemsCount = _itemsCount > MAX_ITEMS_COUNT ? MAX_ITEMS_COUNT : _itemsCount;
+        itemsCount = min(_itemsCount, MAX_ITEMS_COUNT);
         activeItemIndex = -1;
         for (int i = 0; i < itemsCount; i++)
             items[i] = _items[i];
 
         unsigned long currentTime = millis();
-        timer = new Timer(currentTime, getRandomDelay());
+        roundTimer = new Timer(currentTime, getRandomDelay());
         gameOverTimer = new Timer(currentTime, gameTimeMs);
         isDisposed = false;
         totalScores = 0;
+        roundsCount = 0;
     }
 
     void tick() {
@@ -84,19 +86,24 @@ public:
         return gameOverTimer->isOver(millis());
     }
 
-    int getTotalScores() {
+    int getScores() {
         return totalScores;
+    }
+
+    int getMaxScores() {
+        return maxScoresPerRound * roundsCount;
     }
 
 private:
     int itemsCount;
     int activeItemIndex;
     Item* items[MAX_ITEMS_COUNT];
-    Timer* timer;
+    Timer* roundTimer;
     Timer* gameOverTimer;
     int currentState;
     bool isDisposed;
     int totalScores;
+    int roundsCount;
 
     long getRandomDelay() {
         return (long)random(MIN_PAUSE_DELAY, MAX_PAUSE_DELAY + 1) * 1000;
@@ -104,12 +111,13 @@ private:
 
     void handlePause() {
         unsigned long currentTime = millis();
-        if (!timer->isOver(currentTime))
+        if (!roundTimer->isOver(currentTime))
             return;
 
         activeItemIndex = random(0, itemsCount);
         items[activeItemIndex]->activate();
-        timer = new Timer(currentTime, timeToHoldMs);
+        roundTimer = new Timer(currentTime, timeToHoldMs);
+        roundsCount++;
         currentState = STATE_ACTIVE;
     }
 
@@ -117,13 +125,13 @@ private:
         unsigned long currentTime = millis();
         Item* item = items[activeItemIndex];
 
-        if (!timer->isOver(currentTime) && !item->wasHold())
+        if (!roundTimer->isOver(currentTime) && !item->wasHold())
             return;
 
         totalScores += calculateScores(currentTime);
         item->deactivate();
         activeItemIndex = -1;
-        timer = new Timer(currentTime, getRandomDelay());
+        roundTimer = new Timer(currentTime, getRandomDelay());
         currentState = STATE_PAUSE;
     }
 
@@ -137,10 +145,10 @@ private:
     }
 
     int calculateScores(unsigned long currentTime) {
-        if (timer->isOver(currentTime))
+        if (roundTimer->isOver(currentTime))
             return 0;
         
-        long delta = timer->getDelta(currentTime);
+        long delta = roundTimer->getDelta(currentTime);
         // todo: make normal calculation
         return 1;
     }

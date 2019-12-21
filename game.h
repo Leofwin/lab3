@@ -6,7 +6,7 @@
 #define STATE_PAUSE 0
 #define STATE_ACTIVE 1
 
-#define MAX_ITEMS_COUNT 3
+#define MAX_CONTROLLERS_COUNT 3
 
 const int maxScoresPerRound = 5;
 const long timeToHoldMs = 5L * 1000;
@@ -18,12 +18,12 @@ const int MAX_PAUSE_DELAY = 4;
 
 class Game {
 public:
-    Game(Item** _items, int _itemsCount) {
-        itemsCount = min(_itemsCount, MAX_ITEMS_COUNT);
-        activeItemIndex = -1;
-        for (int i = 0; i < itemsCount; i++) {
-            items[i] = _items[i];
-            items[i]->deactivate();
+    Game(GameController** _controllers, int _controllersCount) {
+        controllersCount = min(_controllersCount, MAX_CONTROLLERS_COUNT);
+        activeControllerIndex = -1;
+        for (int i = 0; i < controllersCount; i++) {
+            controllers[i] = _controllers[i];
+            controllers[i]->deactivate();
         }
 
         unsigned long currentTime = millis();
@@ -70,15 +70,15 @@ public:
         if (isDisposed)
             return;
         
-        for (int i = 0; i < itemsCount; i++)
-            items[i]->deactivate();
+        for (int i = 0; i < controllersCount; i++)
+            controllers[i]->deactivate();
         isDisposed = true;
     }
 
 private:
-    int itemsCount;
-    int activeItemIndex;
-    Item* items[MAX_ITEMS_COUNT];
+    int controllersCount;
+    int activeControllerIndex;
+    GameController* controllers[MAX_CONTROLLERS_COUNT];
     Timer* roundTimer;
     Timer* gameOverTimer;
     int currentState;
@@ -95,16 +95,16 @@ private:
         if (!roundTimer->isOver(currentTime))
             return;
 
-        int nextItemIndex = random(itemsCount + 1) - 1;
-        if (!items[nextItemIndex]->isCanActivate()) {
+        int nextIndex = random(controllersCount + 1) - 1;
+        if (!controllers[nextIndex]->isCanActivate()) {
             Serial.println("Hacking attempt!");
             roundsCount++;
             delay(NOT_ACTIVATED_DELAY);
             return;
         }
 
-        items[nextItemIndex]->activate();
-        activeItemIndex = nextItemIndex;
+        controllers[nextIndex]->activate();
+        activeControllerIndex = nextIndex;
         roundTimer = new Timer(currentTime, timeToHoldMs);
         roundsCount++;
         currentState = STATE_ACTIVE;
@@ -112,14 +112,14 @@ private:
 
     void handleActive() {
         unsigned long currentTime = millis();
-        Item* item = items[activeItemIndex];
+        GameController* controller = controllers[activeControllerIndex];
 
-        if (!roundTimer->isOver(currentTime) && !item->wasHold())
+        if (!roundTimer->isOver(currentTime) && !controller->wasHold())
             return;
 
         totalScores += calculateScores(currentTime);
-        item->deactivate();
-        activeItemIndex = -1;
+        controller->deactivate();
+        activeControllerIndex = -1;
         roundTimer = new Timer(currentTime, getRandomDelayInMs());
         currentState = STATE_PAUSE;
     }

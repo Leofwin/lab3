@@ -8,8 +8,8 @@
 
 class ScorePrinter {
 public:
-    ScorePrinter(int dinPin, int clkPin, int csPin, int displayCount = 1) {
-        ledDisplay = new LedControl(dinPin, clkPin, csPin, displayCount);
+    ScorePrinter(int dinPin, int clkPin, int csPin, int displaysCount = 1) {
+        ledDisplay = new LedControl(dinPin, clkPin, csPin, displaysCount);
     }
 
     initialize() {

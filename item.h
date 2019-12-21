@@ -9,11 +9,10 @@
 
 const float MAX_POTENTIAL_DISTANCE = 200.0;
 const float maxDistance = 25.0;
-const float delta = 5.0;
 
-class Item {
+class GameController {
 public:
-    Item(Diode* _diode, DistanceSensor* _sensor) {
+    GameController(Diode* _diode, DistanceSensor* _sensor) {
         diode = _diode;
         sensor = _sensor;
     }

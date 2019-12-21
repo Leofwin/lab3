@@ -2,41 +2,20 @@
 #include "sensor.h"
 #include "game.h"
 #include "printer.h"
-#include "LedControl.h"
 
-#define R_OUT_FIRST 45
-#define G_OUT_FIRST 47
-#define B_OUT_FIRST 49
-
-#define R_OUT_SECOND 44
-#define G_OUT_SECOND 46
-#define B_OUT_SECOND 48
-
-#define R_OUT_THIRD 35
-#define G_OUT_THIRD 37
-#define B_OUT_THIRD 39
-
-const int sensorPinFirst = A0;
-const int sensorPinSecond = A3;
-const int sensorPinThird = A5;
-
-const int dinPin = 26;
-const int clkPin = 22;
-const int csPin = 24;
-const int displayCount = 1;
 ScorePrinter* scorePrinter;
 Game* game;
 bool isPrintScores = false;
 
 void setup() {
     Serial.begin(115200);
-    const Item* items[] = {
-        new Item(new Diode(R_OUT_FIRST, G_OUT_FIRST, B_OUT_FIRST), new DistanceSensor(sensorPinFirst)),
-        new Item(new Diode(R_OUT_SECOND, G_OUT_SECOND, B_OUT_SECOND), new DistanceSensor(sensorPinSecond)),
-        new Item(new Diode(R_OUT_THIRD, G_OUT_THIRD, B_OUT_THIRD), new DistanceSensor(sensorPinThird))
+    const GameController* controllers[] = {
+        new GameController(new Diode(45, 47, 49), new DistanceSensor(A0)),
+        new GameController(new Diode(44, 46, 48), new DistanceSensor(A3)),
+        new GameController(new Diode(35, 37, 39), new DistanceSensor(A5))
     };
-    game = new Game(items, 3);
-    scorePrinter = new ScorePrinter(dinPin, clkPin, csPin, displayCount);
+    game = new Game(controllers, 3);
+    scorePrinter = new ScorePrinter(26, 22, 24, 1);
     scorePrinter->initialize();
     Serial.println("Game has began!");
 }

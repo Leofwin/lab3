@@ -4,7 +4,7 @@
 
 #define WIDTH 8
 #define CELLS_COUNT 64
-#define DRAW_DELAY 10
+#define DRAW_DELAY 100
 
 class ScorePrinter {
 public:
@@ -22,15 +22,15 @@ public:
         const int cellsCount = scores * CELLS_COUNT / maxScores;
 
         for (int i = 0; i < cellsCount; i++) {
-            int y = cellsCount / WIDTH;
-            int x = cellsCount % WIDTH;
+            int y = i / WIDTH;
+            int x = i % WIDTH;
             drawPoint(y, x);
             delay(DRAW_DELAY);
         }
     }
 
 private:
-LedControl* ledDisplay;
+    LedControl* ledDisplay;
 
     drawPoint(int y, int x) {
         ledDisplay->setLed(0, y, x, true);

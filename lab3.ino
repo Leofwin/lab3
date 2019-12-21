@@ -2,22 +2,23 @@
 #include "sensor.h"
 #include "game.h"
 #include "printer.h"
+#include "LedControl.h"
 
-#define R_OUT_FIRST 7
-#define G_OUT_FIRST 8
-#define B_OUT_FIRST 9
+#define R_OUT_FIRST 45
+#define G_OUT_FIRST 47
+#define B_OUT_FIRST 49
 
-#define R_OUT_SECOND 7
-#define G_OUT_SECOND 8
-#define B_OUT_SECOND 9
+#define R_OUT_SECOND 44
+#define G_OUT_SECOND 46
+#define B_OUT_SECOND 48
 
-#define R_OUT_THIRD 7
-#define G_OUT_THIRD 8
-#define B_OUT_THIRD 9
+#define R_OUT_THIRD 35
+#define G_OUT_THIRD 37
+#define B_OUT_THIRD 39
 
 const int sensorPinFirst = A0;
-const int sensorPinSecond = A1;
-const int sensorPinThird = A2;
+const int sensorPinSecond = A3;
+const int sensorPinThird = A5;
 
 const int dinPin = 26;
 const int clkPin = 22;
@@ -28,6 +29,7 @@ Game* game;
 bool isPrintScores = false;
 
 void setup() {
+    Serial.begin(115200);
     const Item* items[] = {
         new Item(new Diode(R_OUT_FIRST, G_OUT_FIRST, B_OUT_FIRST), new DistanceSensor(sensorPinFirst)),
         new Item(new Diode(R_OUT_SECOND, G_OUT_SECOND, B_OUT_SECOND), new DistanceSensor(sensorPinSecond)),
@@ -35,6 +37,8 @@ void setup() {
     };
     game = new Game(items, 3);
     scorePrinter = new ScorePrinter(dinPin, clkPin, csPin, displayCount);
+    scorePrinter->initialize();
+    Serial.println("Game has began!");
 }
 
 void loop() {
@@ -43,8 +47,16 @@ void loop() {
 
     if (!game->isOver()) {
         game->tick();
+        return;
     }
 
+    game->dispose();
+    Serial.println("Game over!");
+    Serial.print("Your scores is ");
+    Serial.print(game->getScores());
+    Serial.print(" of ");
+    Serial.print(game->getMaxScores());
+    Serial.println();
     scorePrinter->printScores(game->getScores(), game->getMaxScores());
     isPrintScores = true;
 }

@@ -9,8 +9,8 @@
 #define MAX_ITEMS_COUNT 3
 
 const int maxScoresPerRound = 5;
-const long timeToHoldMs = 1000 * 5;
-const long gameTimeMs = 1000 * 40;
+const long timeToHoldMs = 5L * 1000;
+const long gameTimeMs = 30L * 1000;
 
 const int MIN_PAUSE_DELAY = 1;
 const int MAX_PAUSE_DELAY = 4;
@@ -20,8 +20,10 @@ public:
     Game(Item** _items, int _itemsCount) {
         itemsCount = min(_itemsCount, MAX_ITEMS_COUNT);
         activeItemIndex = -1;
-        for (int i = 0; i < itemsCount; i++)
+        for (int i = 0; i < itemsCount; i++) {
             items[i] = _items[i];
+            items[i]->deactivate();
+        }
 
         unsigned long currentTime = millis();
         roundTimer = new Timer(currentTime, getRandomDelayInMs());
@@ -29,13 +31,12 @@ public:
         isDisposed = false;
         totalScores = 0;
         roundsCount = 0;
+        currentState = STATE_PAUSE;
     }
 
     void tick() {
-        if (isOver()) {
-            dispose();
+        if (isOver())
             return;
-        }
 
         switch (currentState)
         {
@@ -64,6 +65,15 @@ public:
         return maxScoresPerRound * roundsCount;
     }
 
+    void dispose() {
+        if (isDisposed)
+            return;
+        
+        for (int i = 0; i < itemsCount; i++)
+            items[i]->deactivate();
+        isDisposed = true;
+    }
+
 private:
     int itemsCount;
     int activeItemIndex;
@@ -75,8 +85,8 @@ private:
     int totalScores;
     int roundsCount;
 
-    long getRandomDelayInMs() {
-        return (long)random(MIN_PAUSE_DELAY, MAX_PAUSE_DELAY + 1) * 1000;
+    int getRandomDelayInMs() {
+        return random(MIN_PAUSE_DELAY, MAX_PAUSE_DELAY + 1) * 1000;
     }
 
     void handlePause() {
@@ -84,7 +94,7 @@ private:
         if (!roundTimer->isOver(currentTime))
             return;
 
-        activeItemIndex = random(0, itemsCount);
+        activeItemIndex = random(itemsCount);
         items[activeItemIndex]->activate();
         roundTimer = new Timer(currentTime, timeToHoldMs);
         roundsCount++;
@@ -105,20 +115,11 @@ private:
         currentState = STATE_PAUSE;
     }
 
-    void dispose() {
-        if (isDisposed)
-            return;
-        
-        if (activeItemIndex > 0)
-            items[activeItemIndex]->deactivate();
-        isDisposed = true;
-    }
-
     int calculateScores(unsigned long currentTime) {
         if (roundTimer->isOver(currentTime))
             return 0;
         
         long delta = roundTimer->getDelta(currentTime);
-        return (int)(delta / timeToHoldMs * maxScoresPerRound);
+        return maxScoresPerRound - (int)((double)delta / timeToHoldMs * maxScoresPerRound);
     }
 };

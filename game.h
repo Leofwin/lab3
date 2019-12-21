@@ -10,7 +10,8 @@
 
 const int maxScoresPerRound = 5;
 const long timeToHoldMs = 5L * 1000;
-const long gameTimeMs = 30L * 1000;
+const long gameTimeMs = 20L * 1000;
+const long NOT_ACTIVATED_DELAY = 1L * 1000;
 
 const int MIN_PAUSE_DELAY = 1;
 const int MAX_PAUSE_DELAY = 4;
@@ -94,8 +95,16 @@ private:
         if (!roundTimer->isOver(currentTime))
             return;
 
-        activeItemIndex = random(itemsCount);
-        items[activeItemIndex]->activate();
+        int nextItemIndex = random(itemsCount + 1) - 1;
+        if (!items[nextItemIndex]->isCanActivate()) {
+            Serial.println("Hacking attempt!");
+            roundsCount++;
+            delay(NOT_ACTIVATED_DELAY);
+            return;
+        }
+
+        items[nextItemIndex]->activate();
+        activeItemIndex = nextItemIndex;
         roundTimer = new Timer(currentTime, timeToHoldMs);
         roundsCount++;
         currentState = STATE_ACTIVE;

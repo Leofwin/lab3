@@ -7,13 +7,20 @@
 #define DIODE_COLOR_GREEN 0
 #define DIODE_COLOR_BLUE 0
 
-const float maxDistance = 20.0;
+const float MAX_POTENTIAL_DISTANCE = 200.0;
+const float maxDistance = 25.0;
+const float delta = 5.0;
 
 class Item {
 public:
     Item(Diode* _diode, DistanceSensor* _sensor) {
         diode = _diode;
         sensor = _sensor;
+    }
+
+    isCanActivate() {
+        float distance = sensor->readDistance();
+        return distance > maxDistance && distance <= MAX_POTENTIAL_DISTANCE;
     }
 
     activate() {
@@ -25,7 +32,7 @@ public:
     }
 
     bool wasHold() {
-        return sensor->readDistance() <= maxDistance;
+        return sensor->readDistance() < maxDistance;
     }
 
 private:

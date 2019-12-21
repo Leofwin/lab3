@@ -1,7 +1,6 @@
 #pragma once
 
-#include "diode.h"
-#include "sensor.h"
+#include "item.h"
 #include "timer.h"
 
 #define STATE_PAUSE 0
@@ -9,41 +8,12 @@
 
 #define MAX_ITEMS_COUNT 3
 
-#define DIODE_COLOR_RED 255
-#define DIODE_COLOR_GREEN 0
-#define DIODE_COLOR_BLUE 0
-
-const float maxDistance = 20.0;
 const int maxScoresPerRound = 5;
 const long timeToHoldMs = 1000 * 5;
 const long gameTimeMs = 1000 * 40;
 
 const int MIN_PAUSE_DELAY = 1;
 const int MAX_PAUSE_DELAY = 4;
-
-class Item {
-public:
-    Item(Diode* _diode, DistanceSensor* _sensor) {
-        diode = _diode;
-        sensor = _sensor;
-    }
-
-    activate() {
-        diode->setColor(DIODE_COLOR_RED, DIODE_COLOR_GREEN, DIODE_COLOR_BLUE);
-    }
-
-    deactivate() {
-        diode->turnOffColor();
-    }
-
-    bool wasHold() {
-        return sensor->readDistance() <= maxDistance;
-    }
-
-private:
-    DistanceSensor* sensor;
-    Diode* diode;
-};
 
 class Game {
 public:
@@ -54,7 +24,7 @@ public:
             items[i] = _items[i];
 
         unsigned long currentTime = millis();
-        roundTimer = new Timer(currentTime, getRandomDelay());
+        roundTimer = new Timer(currentTime, getRandomDelayInMs());
         gameOverTimer = new Timer(currentTime, gameTimeMs);
         isDisposed = false;
         totalScores = 0;
@@ -105,7 +75,7 @@ private:
     int totalScores;
     int roundsCount;
 
-    long getRandomDelay() {
+    long getRandomDelayInMs() {
         return (long)random(MIN_PAUSE_DELAY, MAX_PAUSE_DELAY + 1) * 1000;
     }
 
@@ -131,7 +101,7 @@ private:
         totalScores += calculateScores(currentTime);
         item->deactivate();
         activeItemIndex = -1;
-        roundTimer = new Timer(currentTime, getRandomDelay());
+        roundTimer = new Timer(currentTime, getRandomDelayInMs());
         currentState = STATE_PAUSE;
     }
 

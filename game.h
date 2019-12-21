@@ -149,7 +149,6 @@ private:
             return 0;
         
         long delta = roundTimer->getDelta(currentTime);
-        // todo: make normal calculation
-        return 1;
+        return (int)(delta / timeToHoldMs * maxScoresPerRound);
     }
 };
